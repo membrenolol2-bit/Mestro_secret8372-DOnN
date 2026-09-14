@@ -977,9 +977,14 @@ async def on_ready():
     if ALLOWED_GUILD_IDS:
         # Sync to specific guilds
         guild_objects = [discord.Object(id=gid) for gid in ALLOWED_GUILD_IDS]
+        synced = []
         for guild_obj in guild_objects:
-            tree.copy_global_to(guild=guild_obj)
-            synced = await tree.sync(guild=guild_obj)
+            try:
+                tree.copy_global_to(guild=guild_obj)
+                synced = await tree.sync(guild=guild_obj)
+            except Exception as e:
+                print(f"[BOT]  Failed to sync commands to guild {guild_obj.id}: {e}")
+                traceback.print_exc()
         print(f"\n{'='*55}")
         print(f"✅ [BOT] Connected as: {client.user}")
         print(f"✅ Synced {len(synced)} commands to guilds: {ALLOWED_GUILD_IDS}")
@@ -988,7 +993,12 @@ async def on_ready():
         print(f"{'='*55}\n")
     else:
         # Sync globally (user token mode)
-        synced = await tree.sync()
+        synced = []
+        try:
+            synced = await tree.sync()
+        except Exception as e:
+            print(f"[BOT]  Failed to sync commands globally: {e}")
+            traceback.print_exc()
         print(f"\n{'='*55}")
         print(f"✅ [BOT] Connected as: {client.user}")
         print(f"✅ Synced {len(synced)} commands globally")
